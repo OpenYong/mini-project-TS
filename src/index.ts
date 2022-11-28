@@ -1,17 +1,28 @@
-const btn = document.getElementById("btn")! as HTMLButtonElement;
-const input = document.getElementById("todoInput")! as HTMLInputElement;
-// const form = document.querySelector("form")!;
-const form = document.querySelector("#todoForm")! as HTMLFormElement;
-const list = document.getElementById("todoList")!;
-
 interface Todo {
   text: string;
   isCompleted: boolean;
 }
 
-const todos: Todo[] = [];
+const btn = document.getElementById("btn")! as HTMLButtonElement;
+const input = document.getElementById("todoInput")! as HTMLInputElement;
+const form = document.querySelector("#todoForm")! as HTMLFormElement;
+const list = document.getElementById("todoList")!;
 
-function handleSubmit(e: SubmitEvent) {
+const todos: Todo[] = readTodoStorage();
+
+todos.forEach(createTodoElement);
+
+function readTodoStorage(): [] {
+  const storedTodos = localStorage.getItem("todos");
+  if (storedTodos === null) return [];
+  return JSON.parse(storedTodos);
+}
+
+function saveTodoStorage() {
+  localStorage.setItem("todos", JSON.stringify(todos));
+}
+
+function submitHandler(e: SubmitEvent) {
   e.preventDefault();
   const newTodo: Todo = {
     text: input.value,
@@ -20,20 +31,24 @@ function handleSubmit(e: SubmitEvent) {
 
   todos.push(newTodo);
   createTodoElement(newTodo);
+
+  saveTodoStorage();
+  input.value = "";
 }
 
 function createTodoElement(todo: Todo) {
   const listItem = document.createElement("li");
   const checkbox = document.createElement("input");
   checkbox.type = "checkbox";
+  checkbox.checked = todo.isCompleted;
+  checkbox.addEventListener("change", function () {
+    todo.isCompleted = checkbox.checked;
+    saveTodoStorage();
+  });
+
   listItem.append(todo.text);
   listItem.append(checkbox);
   list.append(listItem);
-  input.value = "";
 }
 
-form.addEventListener("submit", handleSubmit);
-// btn.addEventListener("click", function () {
-//   alert(input.value);
-//   input.value = "";
-// });
+form.addEventListener("submit", submitHandler);
