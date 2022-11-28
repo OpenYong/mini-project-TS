@@ -7,10 +7,14 @@ const btn = document.getElementById("btn")! as HTMLButtonElement;
 const input = document.getElementById("todoInput")! as HTMLInputElement;
 const form = document.querySelector("#todoForm")! as HTMLFormElement;
 const list = document.getElementById("todoList")!;
+const completedList = document.getElementById("completedTodoList")!;
 
 const todos: Todo[] = readTodoStorage();
 
-todos.forEach(createTodoElement);
+todos.filter((todo) => todo.isCompleted === false).forEach(createTodoElement);
+todos
+  .filter((todo) => todo.isCompleted === true)
+  .forEach(createCompletedElement);
 
 function readTodoStorage(): [] {
   const storedTodos = localStorage.getItem("todos");
@@ -44,11 +48,30 @@ function createTodoElement(todo: Todo) {
   checkbox.addEventListener("change", function () {
     todo.isCompleted = checkbox.checked;
     saveTodoStorage();
+    listItem.remove();
+    createCompletedElement(todo);
   });
 
   listItem.append(todo.text);
   listItem.append(checkbox);
   list.append(listItem);
+}
+
+function createCompletedElement(todo: Todo) {
+  const listItem = document.createElement("li");
+  const checkbox = document.createElement("input");
+  checkbox.type = "checkbox";
+  checkbox.checked = todo.isCompleted;
+  checkbox.addEventListener("change", function () {
+    todo.isCompleted = checkbox.checked;
+    saveTodoStorage();
+    listItem.remove();
+    createTodoElement(todo);
+  });
+
+  listItem.append(todo.text);
+  listItem.append(checkbox);
+  completedList.append(listItem);
 }
 
 form.addEventListener("submit", submitHandler);
